@@ -11,7 +11,7 @@ const HOST = process.env.DRZEWO_HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DB_PATH = path.join(__dirname, 'data', 'drzewo.db');
-const MAX_BODY_BYTES = 10 * 1024 * 1024;
+const MAX_BODY_BYTES = 100 * 1024 * 1024;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -87,6 +87,10 @@ const stmt = {
     'UPDATE people SET name = ?, gender = ?, photo = ?, birth = ?, death = ?, description = ?, x = ?, y = ? WHERE id = ?',
   ),
   updatePosition: db.prepare('UPDATE people SET x = ?, y = ? WHERE id = ?'),
+  restorePerson: db.prepare(
+    'INSERT INTO people (id, name, gender, photo, birth, death, description, x, y) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  ),
+  restoreRelation: db.prepare('INSERT INTO relations (id, a_id, b_id, kind) VALUES (?, ?, ?, ?)'),
   deletePerson: db.prepare('DELETE FROM people WHERE id = ?'),
   insertRelation: db.prepare('INSERT INTO relations (a_id, b_id, kind) VALUES (?, ?, ?)'),
   deleteRelation: db.prepare('DELETE FROM relations WHERE id = ?'),
@@ -265,6 +269,25 @@ function createRelation(body) {
   return {};
 }
 
+// Zastępuje całą bazę kopią z GET /api/tree (osoby ze zdjęciami i powiązania)
+function restoreTree(body) {
+  if (!Array.isArray(body.people) || !Array.isArray(body.relations)) {
+    throw new HttpError(400, 'Nieprawidłowy plik kopii');
+  }
+  tx(() => {
+    db.exec('DELETE FROM relations; DELETE FROM people;');
+    for (const p of body.people) {
+      const d = cleanPerson(p);
+      stmt.restorePerson.run(parseId(p.id), d.name, d.gender, d.photo, d.birth, d.death, d.description, d.x, d.y);
+    }
+    for (const r of body.relations) {
+      if (!['parent', 'spouse', 'sibling'].includes(r.kind)) throw new HttpError(400, 'Nieznany rodzaj powiązania');
+      stmt.restoreRelation.run(parseId(r.id), parseId(r.a_id), parseId(r.b_id), r.kind);
+    }
+  });
+  return { people: body.people.length, relations: body.relations.length };
+}
+
 function deleteRelation(id) {
   stmt.deleteRelation.run(id);
   return {};
@@ -317,6 +340,7 @@ async function handleApi(req, url) {
   if (resource === 'tree' && method === 'GET' && !rawId) return getTree();
   if (resource === 'positions' && method === 'POST' && !rawId) return savePositions((await readBody(req)).positions);
   if (resource === 'relations' && method === 'POST' && !rawId) return createRelation(await readBody(req));
+  if (resource === 'restore' && method === 'POST' && !rawId) return restoreTree(await readBody(req));
   if (resource === 'people' && method === 'POST' && !rawId) return createPerson(await readBody(req));
   if (resource === 'people' && method === 'PUT' && rawId) return updatePerson(parseId(rawId), await readBody(req));
   if (resource === 'people' && method === 'DELETE' && rawId) return deletePerson(parseId(rawId));
