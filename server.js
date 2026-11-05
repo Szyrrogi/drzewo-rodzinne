@@ -43,6 +43,11 @@ class HttpError extends Error {
 
 // ---------- baza danych ----------
 
+if (!process.env.DRZEWO_HASLO || !process.env.DRZEWO_HASLO_ODCZYT) {
+  console.error('Ustaw zmienne środowiskowe DRZEWO_HASLO (edycja) i DRZEWO_HASLO_ODCZYT (oglądanie), zanim uruchomisz serwer.');
+  process.exit(1);
+}
+
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const isNewDb = !fs.existsSync(DB_PATH);
 const db = new DatabaseSync(DB_PATH);
@@ -292,7 +297,7 @@ function readBody(req) {
 }
 
 // Hasło do zapisów. Ustaw zmienną DRZEWO_HASLO, żeby nie trzymać hasła w kodzie.
-const EDIT_PASSWORD = process.env.DRZEWO_HASLO || 'igorek';
+const EDIT_PASSWORD = process.env.DRZEWO_HASLO;
 
 async function handleApi(req, url) {
   const [, resource, rawId] = url.pathname.split('/').filter(Boolean);
@@ -342,7 +347,7 @@ function serveStatic(pathname, res) {
 }
 
 // Hasło do oglądania drzewa. Ustaw DRZEWO_HASLO_ODCZYT, żeby nie trzymać go w kodzie.
-const VIEW_PASSWORD = process.env.DRZEWO_HASLO_ODCZYT || 'różanki';
+const VIEW_PASSWORD = process.env.DRZEWO_HASLO_ODCZYT;
 const SESSION_COOKIE = 'drzewo_sesja';
 const sessions = new Set();
 
