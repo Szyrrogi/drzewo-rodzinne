@@ -6,7 +6,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const { DatabaseSync } = require('node:sqlite');
 
-const HOST = '127.0.0.1';
+// Na hostingu (np. Render) ustaw DRZEWO_HOST=0.0.0.0, żeby serwer był dostępny z zewnątrz
+const HOST = process.env.DRZEWO_HOST || '127.0.0.1';
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DB_PATH = path.join(__dirname, 'data', 'drzewo.db');
