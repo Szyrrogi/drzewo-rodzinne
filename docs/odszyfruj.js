@@ -10,11 +10,19 @@
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     error.textContent = '';
+    let file;
     try {
-      const file = await (await fetch('drzewo.enc.json')).json();
+      file = await (await fetch('drzewo.enc.json')).json();
+    } catch {
+      error.textContent = 'Nie udało się wczytać danych. Odśwież stronę.';
+      return;
+    }
+    try {
+      // NFC: znaki z akcentami (np. ó) wpisane różnie przez klawiaturę dają ten sam ciąg
+      const password = form.haslo.value.normalize('NFC');
       const baseKey = await crypto.subtle.importKey(
         'raw',
-        new TextEncoder().encode(form.haslo.value),
+        new TextEncoder().encode(password),
         'PBKDF2',
         false,
         ['deriveKey'],
