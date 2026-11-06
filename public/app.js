@@ -95,6 +95,11 @@
   }
 
   async function api(method, url, body) {
+    // Wersja statyczna (GitHub Pages): dane odszyfrowane w przeglądarce, bez zapisów
+    if (window.DRZEWO_DATA) {
+      if (method === 'GET' && url === '/api/tree') return window.DRZEWO_DATA;
+      throw new Error('Ta wersja służy tylko do oglądania.');
+    }
     const headers = body ? { 'Content-Type': 'application/json' } : {};
     const haslo = getPassword();
     if (method !== 'GET' && haslo) headers['X-Haslo'] = haslo;

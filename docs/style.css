@@ -1,0 +1,354 @@
+:root {
+  --bg: #f5f3ee;
+  --panel: #ffffff;
+  --ink: #2a2a2a;
+  --muted: #7b7b7b;
+  --line: #9aa0a6;
+  --border: #e3e0d8;
+  --input-border: #cfcac0;
+  --accent: #2f7a5a;
+  --male: #dde9f7;
+  --male-line: #6f9fd6;
+  --female: #fbe3ec;
+  --female-line: #d9809c;
+  --neutral: #eeeeee;
+  --neutral-line: #bdbdbd;
+  --danger: #b3261e;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- pasek narzędzi ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar h1 { font-size: 18px; margin: 0 8px 0 0; }
+
+.toolbar input[type="search"] {
+  width: 220px;
+  padding: 7px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.hint { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+/* ---------- płótno ---------- */
+
+main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+#canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+#canvas.grabbing { cursor: grabbing; }
+
+.card { cursor: pointer; }
+.card .bg {
+  fill: var(--neutral);
+  stroke: var(--neutral-line);
+  stroke-width: 1.5;
+}
+.card.m .bg { fill: var(--male); stroke: var(--male-line); }
+.card.f .bg { fill: var(--female); stroke: var(--female-line); }
+.card:hover .bg { stroke-width: 2.5; }
+.card.dim { opacity: 0.3; }
+body.readonly .edit-only { display: none !important; }
+body.static #edit-toggle { display: none !important; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+
+.overlay form {
+  background: var(--panel);
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: min(340px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overlay h1 { margin: 0; font-size: 20px; }
+
+.overlay input {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+}
+
+.overlay .error { min-height: 1.4em; }
+#kin-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.card.selected .bg { stroke: var(--accent); stroke-width: 3; }
+.card.match .bg { stroke: #e0a100; stroke-width: 3; }
+
+.card .avatar {
+  fill: rgba(255, 255, 255, 0.7);
+  stroke: var(--neutral-line);
+}
+.card .initials {
+  font: 600 18px system-ui, sans-serif;
+  fill: var(--ink);
+  dominant-baseline: central;
+}
+.card .name { font: 600 14px system-ui, sans-serif; fill: var(--ink); }
+.card .dates { font: 12px system-ui, sans-serif; fill: var(--muted); }
+
+.edge { fill: none; stroke: var(--line); stroke-width: 2; }
+.edge.sibling { stroke-dasharray: 6 5; }
+.edge.hl { stroke: var(--accent); stroke-width: 3; }
+.edge.dim { opacity: 0.25; }
+.edge.spouse { stroke: var(--female-line); }
+.edge.spouse text {
+  fill: var(--female-line);
+  font-size: 16px;
+  text-anchor: middle;
+}
+
+/* ---------- panel boczny ---------- */
+
+#panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  max-width: 100%;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.06);
+}
+
+#panel h2 { margin: 12px 0 4px; font-size: 20px; }
+
+.close { position: absolute; top: 10px; right: 12px; }
+
+.panel-photo { display: flex; justify-content: center; }
+
+.panel-photo img,
+.avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-large {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--neutral);
+  color: var(--muted);
+  font-size: 36px;
+}
+
+.dates,
+.muted { color: var(--muted); }
+
+.description {
+  white-space: pre-wrap;
+  background: #faf9f6;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.relations h3 {
+  margin: 16px 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.relations ul { list-style: none; margin: 0; padding: 0; }
+
+.relations li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link-form select {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  padding: 6px 8px;
+  font: inherit;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* ---------- przyciski ---------- */
+
+button {
+  font: inherit;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+button.danger { color: var(--danger); }
+
+button.icon {
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+}
+button.icon:hover { color: var(--danger); }
+
+button.link {
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-align: left;
+}
+
+/* ---------- formularz ---------- */
+
+dialog {
+  border: 0;
+  border-radius: 14px;
+  padding: 0;
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.35); }
+
+#person-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+}
+
+#person-form h2 { margin: 0; font-size: 19px; }
+
+#person-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#person-form input,
+#person-form select,
+#person-form textarea {
+  font: inherit;
+  color: var(--ink);
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: #fff;
+}
+
+#person-form select:disabled { background: #f3f1ec; }
+
+#person-form label.file-button {
+  flex-direction: row;
+  align-items: center;
+  width: fit-content;
+  padding: 7px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.row { display: flex; gap: 12px; }
+
+.photo-row { display: flex; align-items: center; gap: 12px; }
+
+.photo-buttons { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+
+#photo-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+fieldset {
+  margin: 0;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+fieldset legend {
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.error { margin: 0; color: var(--danger); }
+
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 700px) {
+  .hint { display: none; }
+  #panel { width: 100%; }
+  .row { flex-direction: column; }
+}

@@ -84,6 +84,38 @@ main {
 .card:hover .bg { stroke-width: 2.5; }
 .card.dim { opacity: 0.3; }
 body.readonly .edit-only { display: none !important; }
+body.static #edit-toggle { display: none !important; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+}
+
+.overlay form {
+  background: var(--panel);
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: min(340px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.overlay h1 { margin: 0; font-size: 20px; }
+
+.overlay input {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+}
+
+.overlay .error { min-height: 1.4em; }
 #kin-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 .card.selected .bg { stroke: var(--accent); stroke-width: 3; }
 .card.match .bg { stroke: #e0a100; stroke-width: 3; }

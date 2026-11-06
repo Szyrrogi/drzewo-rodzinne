@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Drzewo rodzinne</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="static">
+  <header class="toolbar">
+    <h1>Drzewo rodzinne</h1>
+    <input id="search" type="search" placeholder="Szukaj osoby (Enter)" autocomplete="off">
+    <button id="add-person" class="primary edit-only" type="button">+ Dodaj osobę</button>
+    <button id="fit" type="button">Dopasuj widok</button>
+    <button id="kin-toggle" type="button" aria-pressed="false" title="Po zaznaczeniu osoby podświetla jej przodków i potomków (rodzice, dziadkowie, dzieci, wnuki)">Podświetl linię rodową</button>
+    <button id="arrange" type="button" class="edit-only" title="Automatycznie ustawia wszystkie karty">Ułóż drzewo</button>
+    <button id="edit-toggle" type="button">Odblokuj edycję</button>    <span class="hint">Przeciągnij tło, aby się przesuwać · kółko myszy = zoom · przeciągnij kartę, aby ją przenieść · kliknij kartę, aby zobaczyć opis i podświetlić jej rodziców oraz dzieci</span>
+  </header>
+
+  <main>
+    <svg id="canvas" aria-label="Drzewo genealogiczne">
+      <defs>
+        <!-- grot ma kolor linii, do której należy -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path>
+        </marker>
+      </defs>
+      <g id="world">
+        <g id="edges"></g>
+        <g id="cards"></g>
+      </g>
+    </svg>
+    <aside id="panel" hidden></aside>
+  </main>
+
+  <dialog id="person-dialog">
+    <form id="person-form" novalidate>
+      <h2 id="dialog-title">Nowa osoba</h2>
+
+      <label>Imię i nazwisko
+        <input name="name" maxlength="200" autocomplete="off">
+      </label>
+
+      <div class="photo-row">
+        <img id="photo-preview" alt="" hidden>
+        <div class="photo-buttons">
+          <label class="file-button">Wybierz zdjęcie (opcjonalnie)
+            <input id="photo-file" type="file" accept="image/*" hidden>
+          </label>
+          <button id="photo-remove" type="button">Usuń zdjęcie</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Data urodzenia
+          <input name="birth" placeholder="RRRR lub RRRR-MM-DD" autocomplete="off">
+        </label>
+        <label>Data zgonu (opcjonalnie)
+          <input name="death" placeholder="RRRR lub RRRR-MM-DD" autocomplete="off">
+        </label>
+      </div>
+
+      <label>Płeć
+        <select name="gender">
+          <option value="">nieokreślona</option>
+          <option value="M">mężczyzna</option>
+          <option value="K">kobieta</option>
+        </select>
+      </label>
+
+      <label>Opis
+        <textarea name="description" rows="4"></textarea>
+      </label>
+
+      <fieldset id="relation-fields">
+        <legend>Pokrewieństwo</legend>
+        <div class="row">
+          <label>Nowa osoba to
+            <select name="relation">
+              <option value="">brak powiązania</option>
+              <option value="brat">Brat</option>
+              <option value="siostra">Siostra</option>
+              <option value="syn">Syn</option>
+              <option value="corka">Córka</option>
+              <option value="tata">Tata</option>
+              <option value="mama">Mama</option>
+              <option value="maz">Mąż</option>
+              <option value="zona">Żona</option>
+            </select>
+          </label>
+          <label>względem
+            <select name="anchor"></select>
+          </label>
+        </div>
+      </fieldset>
+
+      <p id="form-error" class="error" hidden></p>
+
+      <div class="dialog-actions">
+        <button id="cancel" type="button">Anuluj</button>
+        <button type="submit" class="primary">Zapisz</button>
+      </div>
+    </form>
+  </dialog>
+
+
+  <div id="odszyfruj-overlay" class="overlay">
+    <form id="odszyfruj">
+      <h1>Drzewo rodzinne</h1>
+      <input name="haslo" type="password" placeholder="Hasło" autocomplete="current-password" required autofocus>
+      <button type="submit" class="primary">Wejdź</button>
+      <p id="odszyfruj-blad" class="error"></p>
+    </form>
+  </div>
+  <script src="odszyfruj.js"></script>
+</body>
+</html>
